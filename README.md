@@ -1,4 +1,4 @@
-# pdfautmation
+# pdfautomation
 Automate search string and combine PDF files
 
 This script do the folowing:
