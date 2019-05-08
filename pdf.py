@@ -59,7 +59,7 @@ def get_files(path, prefix=None):
 
     return filenames
 
-def deltemfiles(path, prefix):
+def deletemfiles(path, prefix):
 
     filelist = [ f for f in os.listdir(path) if f.startswith(prefix) ]
     for f in filelist:
@@ -114,7 +114,7 @@ def main():
 
     print('Cleaning Up...')
 
-    deltemfiles(path, prefix)
+    deletemfiles(path, prefix)
 
 
     print('Done!')
