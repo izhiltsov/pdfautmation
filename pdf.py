@@ -6,8 +6,8 @@
 
 1. Import a group of files from a folder
 2. Search on a user-provided string.
-3. Extract each page of the documents where there is a hit on the search key and
-create a separate PDF file for each page where there is a hit.
+3. Extract each page of the documents where there is a hit on the search key
+ and create a separate PDF file for each page where there is a hit.
 4. Combine all of the extracted pages into a single PDF file.
 
 
@@ -16,6 +16,7 @@ create a separate PDF file for each page where there is a hit.
 
 import sys
 import os
+import re
 
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from progressbar import ProgressBar
@@ -46,38 +47,60 @@ def extract_text(filename):
     with open(filename, 'rb') as f:
         pdf = PdfFileReader(f, strict=False)
         page = pdf.getPage(0)
-        text = ''.join(page.extractText().split('\n')).lower()
+        text = ''.join(page.extractText().split('\n'))
 
-        return text
+        try:
+            annots = page['/Annots']
+        except:
+            annots = None
+
+        if annots:
+            for annot in annots:
+                anot_obj = annot.getObject()
+                comment = anot_obj.get('/Contents')
+                if comment:
+                    text = text + ' ' + comment
+
+        return text.lower()
 
 
 def get_files(path, prefix=None):
-    if prefix == None:
-        filenames = [filename for filename in os.listdir(path) if filename.endswith('.pdf')]
+    if prefix is None:
+        fnames = [fname for fname in os.listdir(path) if fname.endswith('.pdf')]
     else:
-        filenames = [filename for filename in os.listdir(path) if filename.startswith(prefix)]
+        fnames = [fname for fname in os.listdir(path) if fname.startswith(prefix)]
 
-    return filenames
+    return fnames
+
 
 def deletemfiles(path, prefix):
 
-    filelist = [ f for f in os.listdir(path) if f.startswith(prefix) ]
+    filelist = [f for f in os.listdir(path) if f.startswith(prefix)]
     for f in filelist:
         os.remove(os.path.join(path, f))
 
+
+def Mypage(filename):
+    text = extract_text(filename)
+    match = re.search(r'[0|o]tb\d+', text, re.IGNORECASE)
+    if match:
+        page_number = match.group()
+        return page_number
+    else:
+        return '0'
+
+
 def main():
-
-
     path = '.'
     prefix = 'tmp_page_'
-    output_filename = 'result.pdf'  
+    output_filename = 'result.pdf'
 
     # Ask User to input string
     while True:
         user_string = input('Enter string: ')
         if user_string:
             break
-       
+
     filenames = get_files(path)
 
     print(f'Total pdf files in directory: {len(filenames)}')
@@ -85,7 +108,6 @@ def main():
     print('Splitting files to pages...')
 
     pbar1 = ProgressBar()
-
     for filename in pbar1(filenames):
         splitpages(filename, prefix)
 
@@ -107,6 +129,9 @@ def main():
     if counter > 0:
         print(f'We found {counter} pages that contain string: "{user_string}"')
         print("Let's try to create the final PDF file... ")
+
+        results = sorted(results, key=Mypage)
+
         page_merger(results, output_filename)
         print('PDF file has created...')
     else:
@@ -116,10 +141,7 @@ def main():
 
     deletemfiles(path, prefix)
 
-
     print('Done!')
-
-
 
 
 if __name__ == '__main__':
