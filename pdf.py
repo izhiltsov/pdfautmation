@@ -80,11 +80,11 @@ def deletemfiles(path, prefix):
         os.remove(os.path.join(path, f))
 
 
-def Mypage(filename):
-    text = extract_text(filename)
-    match = re.search(r'[0|o]tb\d+', text, re.IGNORECASE)
+def Mypage(page):
+    text = extract_text(page)
+    match = re.search(r'otb(\d+)', text, re.IGNORECASE)
     if match:
-        page_number = match.group()
+        page_number = match.group(1)
         return page_number
     else:
         return '0'
