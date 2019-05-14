@@ -7,7 +7,7 @@
 1. Import a group of files from a folder
 2. Search on a user-provided string.
 3. Extract each page of the documents where there is a hit on the search key
- and create a separate PDF file for each page where there is a hit.
+   and create a separate PDF file for each page where there is a hit.
 4. Combine all of the extracted pages into a single PDF file.
 
 
@@ -66,11 +66,13 @@ def extract_text(filename):
 
 def get_files(path, prefix=None):
     if prefix is None:
-        fnames = [fname for fname in os.listdir(path) if fname.endswith('.pdf')]
+        filenames = [filename for filename in os.listdir(
+            path) if filename.endswith('.pdf')]
     else:
-        fnames = [fname for fname in os.listdir(path) if fname.startswith(prefix)]
+        filenames = [filename for filename in os.listdir(
+            path) if filename.startswith(prefix)]
 
-    return fnames
+    return filenames
 
 
 def deletemfiles(path, prefix):
