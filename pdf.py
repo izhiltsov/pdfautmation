@@ -35,11 +35,13 @@ def splitpages(filename, prefix):
 
 
 def page_merger(filenames, output_filename):
+    pbar3 = ProgressBar()
     pdf_merger = PdfFileMerger()
-    for filename in filenames:
+    for filename in pbar3(filenames):
         pdf_merger.append(filename)
 
     with open(output_filename, 'wb') as f:
+        print('Creating file... Please wait...')
         pdf_merger.write(f)
 
 
@@ -102,7 +104,7 @@ def main():
         user_string = input('Enter string: ')
         if user_string:
             break
-
+    l_user_string = user_string.lower()
     filenames = get_files(path)
 
     print(f'Total pdf files in directory: {len(filenames)}')
@@ -117,33 +119,37 @@ def main():
     print('Done.')
 
     print(f'Total pages to analyse: {len(pages)}')
-    print('Please wait...')
+    print('Analysing... Please wait...')
 
     results = []
-    counter = 0
+    counter = 0  # page counter
+    oc_counter = 0  # occurrences counter
 
     pbar2 = ProgressBar()
     for page in pbar2(pages):
-        if user_string.lower() in extract_text(page):
+        if l_user_string in extract_text(page):
+            oc_counter = oc_counter + extract_text(page).count(l_user_string)
             results.append(page)
             counter += 1
 
     if counter > 0:
         print(f'We found {counter} pages that contain string: "{user_string}"')
-        print("Let's try to create the final PDF file... ")
+        print(f'We found {oc_counter} occurrences that contain string: "{user_string}"')
+        print("Merging all pages into single pdf file...")
 
         results = sorted(results, key=Mypage)
 
         page_merger(results, output_filename)
+
         print('PDF file has created...')
     else:
         print('Not found')
 
     print('Cleaning Up...')
 
-    deletemfiles(path, prefix)
+    deletemfiles(path, prefix)  # cleaning up all of the .tmp files in curent directory
 
-    print('Done!')
+    print('Done.')
 
 
 if __name__ == '__main__':
